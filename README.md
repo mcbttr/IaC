@@ -1,5 +1,5 @@
 # IaC
-Exemplos de IaC desenvolvidos com Terraform e Azure ARM Templates
+Exemplos de IaC desenvolvidos com Terraform, Azure ARM Templates e AWS Cloudformation
 
 O código Terraform está modularizado e provisiona um ambiente com Kubernetes, VM, OCR (Optical Character Recognition), 
 banco Cosmos, datalake, repositório de imagens docker e rede, Log Analytics e App Insights.

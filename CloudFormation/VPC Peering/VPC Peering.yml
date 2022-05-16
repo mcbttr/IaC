@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Create a VPC and a VPC Peering connection using the PeerRole to accept.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "VPC Peering"
+        Parameters:
+          - Name
+          - RequesterVPCId
+          - PeerRoleArn
+      -
+        Label:
+          default: "Route Table"
+        Parameters:
+          - RouteTable
+
+    ParameterLabels:
+      Name:
+        default: "Input name of VPC Peering Connection"
+      RequesterVPCId:
+        default: "Input your VPC ID"
+      PeerRoleArn:
+        default: "Input the ARN sent by Sensedia Bayer administrator"
+      RouteTable:
+        default: "Input your Route Table from the same VPC you have used above"
+
+Parameters:  
+  Name:
+    Type: String
+  
+  RequesterVPCId:
+    Type: String
+    Default: vpc-xxxxxxxxxx
+  
+  PeerRoleArn:
+    Type: String
+    Default: "arn:aws:iam::[account]:role/[rolename]"
+  
+  RouteTable:
+    Type: String
+    Default: rtb-xxxxxxxxxx
+
+Resources:
+  PeeringConnections:
+    Type: AWS::EC2::VPCPeeringConnection
+    Properties:
+      VpcId: !Ref RequesterVPCId
+      PeerVpcId: 770463688278
+      PeerOwnerId: vpc-0dec258240b35b85b
+      PeerRoleArn: !Ref PeerRoleArn
+      PeerRegion: eu-central-1
+
+  RouteTable1:
+    Type: AWS::EC2::Route
+    Properties: 
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 10.61.53.0/25
+      VpcPeeringConnectionId: !Ref PeeringConnections
+
+  RouteTable2:
+    Type: AWS::EC2::Route
+    Properties: 
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 10.61.213.64/26
+      VpcPeeringConnectionId: !Ref PeeringConnections

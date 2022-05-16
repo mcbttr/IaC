@@ -1,0 +1,400 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Criacao de VPC Endpoints, NLB e Fargate.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "Nome dos recursos"
+        Parameters:
+          - Name
+      -
+        Label:
+          default: "Configuracao de rede - Load Balancer"
+        Parameters:
+          - VPC
+          - Subnets
+          - SecurityGroup
+      -
+        Label:
+          default: "ECS"
+        Parameters:
+          - CreationVCPEndpoint
+          - DesiredCount
+          - ImageURI
+      -
+        Label: 
+          default: "API Gateway"
+        Parameters: 
+          - ResourcePolicy
+          - IDVPCEndpoint
+
+    ParameterLabels:
+      Name:
+        default: "Insira o nome dos recursos que serao provisionados"
+      VPC:
+        default: "Insira a VPC para o NLB"
+      Subnets:
+        default: "Insira as subnets para o NLB"
+      SecurityGroup:
+        default: "Insira o Security Group para o NLB"
+      CreationVCPEndpoint:
+        default: "Voce precisa criar Endpoints para o ECS?"
+      DesiredCount:
+        default: "Insira o numero de containeres no ECS"
+      ImageURI:
+        default: "Insira a URI da imagem que esta no ECR"
+      ResourcePolicy:
+        default: "ResourcePolicy"
+      IDVPCEndpoint:
+        default: "IDVPCEndpoint"
+
+Parameters:
+
+  Name:
+    Type: String
+  
+  VPC:
+    Type: AWS::EC2::VPC::Id
+
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id 
+
+  CreationVCPEndpoint:
+    Type: String
+    AllowedValues: [true, false]
+    Description: "Escolha true para sim e false para nao"
+
+  DesiredCount:
+    Type: String
+
+  ImageURI:
+    Type: String
+
+  ResourcePolicy:
+    Type: String
+
+  IDVPCEndpoint:
+    Type: String
+
+# Condicao para criacao ou nao dos Endpoints
+
+Conditions:
+  CreationVCPEndpointSelected: !Equals [!Ref CreationVCPEndpoint, true]
+
+Resources:
+
+# Endpoints necessarios para o serviço do ECS funcionar.
+
+  EndpointLogs:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: CreationVCPEndpointSelected
+    Properties:
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .logs
+      PrivateDnsEnabled: true
+      SecurityGroupIds: 
+        - !Ref SecurityGroup
+      SubnetIds: 
+        Ref: Subnets
+      VpcEndpointType: Interface
+      VpcId: 
+        Ref: VPC
+
+  EndpointS3:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: CreationVCPEndpointSelected
+    Properties:
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .s3
+      PrivateDnsEnabled: false
+      SecurityGroupIds: 
+        - !Ref SecurityGroup
+      SubnetIds: 
+        Ref: Subnets
+      VpcEndpointType: Interface
+      VpcId: 
+        Ref: VPC
+
+  EndpointECR:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: CreationVCPEndpointSelected
+    Properties:
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .ecr.api
+      PrivateDnsEnabled: true
+      SecurityGroupIds: 
+        - !Ref SecurityGroup
+      SubnetIds: 
+        Ref: Subnets
+      VpcEndpointType: Interface
+      VpcId: 
+        Ref: VPC
+
+  EndpointSSM:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: CreationVCPEndpointSelected
+    Properties:
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .ssm
+      PrivateDnsEnabled: true
+      SecurityGroupIds: 
+        - !Ref SecurityGroup
+      SubnetIds: 
+        Ref: Subnets
+      VpcEndpointType: Interface
+      VpcId: 
+        Ref: VPC
+
+  EndpointDKR:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: CreationVCPEndpointSelected
+    Properties:
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .ecr.dkr
+      PrivateDnsEnabled: true
+      SecurityGroupIds: 
+        - !Ref SecurityGroup
+      SubnetIds: 
+        Ref: Subnets
+      VpcEndpointType: Interface
+      VpcId: 
+        Ref: VPC
+
+  EndpointExecuteAPI:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: CreationVCPEndpointSelected
+    Properties:
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .execute-api
+      PrivateDnsEnabled: true
+      SecurityGroupIds: 
+        - !Ref SecurityGroup
+      SubnetIds: 
+        Ref: Subnets
+      VpcEndpointType: Interface
+      VpcId: 
+        Ref: VPC
+
+# Criacao do NLB Privado
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Ref Name
+      Subnets: !Ref Subnets
+      Type: network
+      Scheme: internal
+      Tags:
+        - Key: Name
+          Value: !Ref Name
+
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: TCP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${Name}-tg
+      VpcId: !Ref VPC
+      Port: 80
+      Protocol: TCP
+      TargetType: ip
+
+# Criacao API Gateway
+
+  VPCLink:
+    Type: AWS::ApiGateway::VpcLink
+    Properties:
+      Name: !Ref Name
+      TargetArns:
+        - !Ref LoadBalancer
+
+  APIGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Ref Name
+      EndpointConfiguration:
+        Types:
+          - PRIVATE
+        VpcEndpointIds:
+          - !If [CreationVCPEndpointSelected, !Ref EndpointExecuteAPI, !Ref IDVPCEndpoint]      
+      Policy:
+        Statement:
+          - Action: 'execute-api:Invoke'
+            Effect: Allow
+            Principal: '*'
+            Resource: 'execute-api:/*'
+          - Action: 'execute-api:Invoke'
+            Condition:
+              StringNotEquals:
+                'aws:SourceVpce': !Ref ResourcePolicy
+            Effect: Deny
+            Principal: '*'
+            Resource: 'execute-api:/*'
+        Version: 2012-10-17
+
+  ApiGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt APIGateway.RootResourceId
+      PathPart: '{proxy+}'
+      RestApiId: !Ref APIGateway
+
+  APIGatewayDeploy:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref APIGateway
+    DependsOn:
+      - APIGatewayMethod
+      - ApiGatewayResource
+
+  APIGatewayStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref APIGateway
+      DeploymentId: !Ref APIGatewayDeploy
+      StageName: dev
+
+  APIGatewayMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: !Ref APIGateway
+      ResourceId: !Ref ApiGatewayResource
+      HttpMethod: ANY      
+      AuthorizationType: NONE
+      RequestParameters:
+        method.request.path.proxy: true
+      Integration:
+        Type: HTTP_PROXY
+        IntegrationHttpMethod: ANY
+        ConnectionType: VPC_LINK
+        ConnectionId: !Sub ${VPCLink}
+        Uri: !Join ['', ["http://", !GetAtt LoadBalancer.DNSName, "/", "{proxy}" ]]
+        RequestParameters:
+          integration.request.path.proxy: 'method.request.path.proxy'
+
+# Criacao da IAM para o ECS
+
+  ECSIAM:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "ecs.amazonaws.com"
+                - "ecs-tasks.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        -
+          PolicyName: !Ref Name
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action: "*"
+                Resource: "*"
+
+# Criacao do ECS Fargate
+
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref Name
+
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn: LoadBalancerListener
+    Properties:
+      Cluster: !Ref ECSCluster
+      LaunchType: FARGATE
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref ECSTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED          
+          SecurityGroups:
+            - !Ref SecurityGroup
+# Inserir manualmente as subnets que o ECS irá utilizar, não da para colocar nos parâmetros pois aceita apenas String
+          Subnets:
+            - subnet-0db347a14ea1b487e
+            - subnet-04d881d382e5e4149          
+      LoadBalancers:
+        - ContainerName: !Ref Name 
+          ContainerPort: 80
+          TargetGroupArn: !Ref TargetGroup
+
+  ECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Ref Name
+      NetworkMode: awsvpc
+      Cpu: 1024
+      Memory: 4096
+      ExecutionRoleArn: !Ref ECSIAM
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: !Ref Name
+          Essential: true
+          Image: !Ref ImageURI
+          Cpu: 1024
+          Memory: 4096
+          PortMappings:
+            - ContainerPort: 80
+          LogConfiguration:
+            LogDriver: 'awslogs'
+            Options:
+              awslogs-group: !Ref 'CloudwatchLogsGroup'
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-stream-prefix: !Ref 'Name'
+          Environment:
+            - Name: BASIC_REQUIREMENT_VARIABLES
+              Value: 'arn:aws:secretsmanager:us-east-1:464432906021:secret:BASIC-CONFIGURATION-SALES-KSmZcJ'
+            - Name: DATABASE_VARIABLES
+              Value: 'arn:aws:secretsmanager:us-east-1:464432906021:secret:HANA-ACCESS-DEV-j006q0'    
+
+# Criação do grupo de logs no CloudWatch
+
+  CloudwatchLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ['-', [ECSLogGroup, !Ref Name]]
+      RetentionInDays: 14

@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: A preencher
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "Route Table"
+        Parameters:
+          - IDPeering
+          - DestinationCIDR
+
+    ParameterLabels:
+      IDPeering:
+        default: "Input ID VPC Peering Connection"
+      DestinationCIDR:
+        default: "Input VPC CIDR of Requester"
+
+Parameters:
+  
+  IDPeering:
+    Type: String
+
+  DestinationCIDR:
+    Type: String
+
+Resources:
+
+    RouteTable1:
+      Type: AWS::EC2::Route
+      Properties: 
+        RouteTableId: rtb-0f38c9bbb6ffe95c7
+        DestinationCidrBlock: !Ref DestinationCIDR
+        VpcPeeringConnectionId: !Ref IDPeering
+
+    RouteTable2:
+      Type: AWS::EC2::Route
+      Properties: 
+        RouteTableId: rtb-0dfb7814f066f33ff
+        DestinationCidrBlock: !Ref DestinationCIDR
+        VpcPeeringConnectionId: !Ref IDPeering
+
+    RouteTable3:
+      Type: AWS::EC2::Route
+      Properties: 
+        RouteTableId: rtb-08f968bc2b2e1b44b
+        DestinationCidrBlock: !Ref DestinationCIDR
+        VpcPeeringConnectionId: !Ref IDPeering

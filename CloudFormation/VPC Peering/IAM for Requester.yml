@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Assumable role for cross account VPC peering.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "Authorization for Peering Connection"
+        Parameters:
+          - PeerRequesterAccountId
+    ParameterLabels:
+      PeerRequesterAccountId:
+        default: "Input account ID of requester"
+
+Parameters:
+  PeerRequesterAccountId:
+    Type: String
+
+Resources:
+  PeerRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Ref AWS::StackName
+      AssumeRolePolicyDocument:
+        Statement:
+          - Principal:
+              AWS: !Ref PeerRequesterAccountId
+            Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+      Path: /
+      Policies:
+        - PolicyName: !Ref AWS::StackName 
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'ec2:AcceptVpcPeeringConnection'
+                Resource: '*'
+
+Outputs:
+  RoleARN:
+    Value: !GetAtt PeerRole.Arn

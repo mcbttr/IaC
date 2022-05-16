@@ -1,0 +1,1126 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Com este template e possivel criar RDS Aurora, MariaDB, MySQL, PostgreSQL, Oracle e SQL Server.
+
+# Interface para preenchimento de dados do usuario.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Configuracao de rede dos recursos que serao provisionados
+        Parameters: 
+          - VPCID
+          - SubnetIdsRDS
+      -
+        Label: 
+          default: Criacao SGBD Aurora Servelerless
+        Parameters:
+          - CreationAuroraServerless
+          - NameAuroraServerless
+          - EngineAuroraServerless
+          - UsernameAuroraServerless
+          - PasswordAuroraServerless
+          - BackupAuroraServerless
+          - MinScaling
+          - MaxScaling
+      -
+        Label: 
+          default: Criacao SGBG MariaDB
+        Parameters: 
+          - CreationMariaDB
+          - NameMariaDB
+          - UsernameMariaDB
+          - PasswordMariaDB
+          - MariaDBEngineVersion
+          - InstanceClassMariaDB
+          - StorageTypeMariaDB
+          - AllocatedStorageMariaDB
+          - BackupMariaDB
+          - MultiAZMariaDB
+      -
+        Label: 
+          default: Criacao SGBG MySQL
+        Parameters: 
+          - CreationMySQL
+          - NameMySQL
+          - UsernameMySQL
+          - PasswordMySQL
+          - MySQLEngineVersion
+          - InstanceClassMySQL
+          - StorageTypeMySQL
+          - AllocatedStorageMySQL
+          - BackupMySQL
+          - MultiAZMySQL
+      -
+        Label: 
+          default: Criacao SGBG Oracle
+        Parameters: 
+          - CreationOracle
+          - NameOracle
+          - UsernameOracle
+          - PasswordOracle
+          - OracleEngineVersion
+          - EngineOracle
+          - LicenseModel
+          - InstanceClassOracle
+          - StorageTypeOracle
+          - AllocatedStorageOracle
+          - BackupOracle
+          - MultiAZOracle
+      -
+        Label: 
+          default: Criacao SGBG PostgreSQL
+        Parameters: 
+          - CreationPostgreSQL
+          - NamePostgreSQL
+          - UsernamePostgreSQL
+          - PasswordPostgreSQL
+          - PostgreSQLEngineVersion
+          - InstanceClassPostgreSQL
+          - StorageTypePostgreSQL
+          - AllocatedStoragePostgreSQL
+          - BackupPostgreSQL
+          - MultiAZPostgreSQL
+      -
+        Label: 
+          default: Criacao SGBG SQL Server
+        Parameters: 
+          - CreationSQLServer
+          - NameSQLServer
+          - UsernameSQLServer
+          - PasswordSQLServer
+          - SQLServerEngineVersion
+          - EngineSQLServer
+          - InstanceClassSQLServer
+          - StorageTypeSQLServer
+          - AllocatedStorageSQLServer
+          - BackupSQLServer
+          - MultiAZSQLServer
+
+    ParameterLabels:
+      VPCID: 
+        default: Insira a sua VPC.
+      SubnetIdsRDS: 
+        default: Informe as subnets referente a VPC escolhida.
+      CreationAuroraServerless:
+        default: Voce quer criar o SGBD RDS Aurora Serverless?
+      NameAuroraServerless:
+        default: Qual o sera o nome do seu Aurora?
+      EngineAuroraServerless:
+        default: Qual engine de SGBD voce ira usar?
+      UsernameAuroraServerless:
+        default: Crie um nome para o usuario admin do Banco de Dados.
+      PasswordAuroraServerless:
+        default: Crie uma senha para o usuario admin do Banco de Dados.
+      BackupAuroraServerless:
+        default: Durante quantos dias voce armazenara o backup do SGBD?
+      MinScaling:
+        default: "Qual sera a capacidade minima (ACU)?"
+      MaxScaling:
+        default: "Qual sera a capacidade maxima (ACU)?"
+      CreationMariaDB:
+        default: Voce quer criar o SGBD MariaDB?
+      NameMariaDB:
+        default: Qual o sera o nome do seu MariaDB?
+      MariaDBEngineVersion:
+        default: Qual sera a versao utilizada?
+      UsernameMariaDB: 
+        default: Crie um nome para o usuario admin do Banco de Dados.
+      PasswordMariaDB: 
+        default: Crie uma senha para o usuario admin do Banco de Dados.
+      InstanceClassMariaDB:
+        default: Qual e o tipo da instancia que sera utilizada?
+      StorageTypeMariaDB:
+        default: Qual sera o tipo de disco que sera usado?
+      AllocatedStorageMariaDB:
+        default: Quanto de disco (Gb) sera provisionado no RDS?
+      MultiAZMariaDB:
+        default: O seu SGBD sera provisionado em varias zonas de disponibilidade?
+      BackupMariaDB:
+        default: Durante quantos dias voce armazenara o backup do SGBD?
+      CreationMySQL:
+        default: Voce quer criar o SGBD MySQL?
+      NameMySQL: 
+        default: Qual o sera o nome do seu MySQL?
+      MySQLEngineVersion:
+        default: Qual sera a versao utilizada?
+      UsernameMySQL: 
+        default: Crie um nome para o usuario admin do Banco de Dados.
+      PasswordMySQL: 
+        default: Crie uma senha para o usuario admin do Banco de Dados.
+      InstanceClassMySQL:
+        default: Qual e o tipo da instancia que sera utilizada?
+      StorageTypeMySQL:
+        default: Qual sera o tipo de disco que sera usado?
+      AllocatedStorageMySQL:
+        default: Quanto de disco (Gb) sera provisionado no RDS?
+      MultiAZMySQL:
+        default: O seu SGBD sera provisionado em varias zonas de disponibilidade?
+      BackupMySQL:
+        default: Durante quantos dias voce armazenara o backup do SGBD?
+      CreationOracle:
+        default: Voce quer criar o SGBD Oracle?
+      NameOracle: 
+        default: Qual o sera o nome do seu Oracle?
+      OracleEngineVersion:
+        default: Qual sera a versao utilizada?
+      UsernameOracle: 
+        default: Crie um nome para o usuario admin do Banco de Dados.
+      PasswordOracle: 
+        default: Crie uma senha para o usuario admin do Banco de Dados.
+      InstanceClassOracle:
+        default: Qual e o tipo da instancia que sera utilizada?
+      StorageTypeOracle:
+        default: Qual sera o tipo de disco que sera usado?
+      AllocatedStorageOracle:
+        default: Quanto de disco (Gb) sera provisionado no RDS?
+      MultiAZOracle:
+        default: O seu SGBD sera provisionado em varias zonas de disponibilidade?
+      BackupOracle:
+        default: Durante quantos dias voce armazenara o backup do SGBD?
+      EngineOracle:
+        default: Qual a edicao do Oracle que voce quer usar?
+      LicenseModel:
+        default: Qual sera o metodo de licenciamento?
+      CreationPostgreSQL:
+        default: Voce quer criar o SGBD PostgreSQL?
+      NamePostgreSQL: 
+        default: Qual o sera o nome do seu PostgreSQL?
+      PostgreSQLEngineVersion:
+        default: Qual sera a versao utilizada?
+      UsernamePostgreSQL: 
+        default: Crie um nome para o usuario admin do Banco de Dados.
+      PasswordPostgreSQL: 
+        default: Crie uma senha para o usuario admin do Banco de Dados.
+      InstanceClassPostgreSQL:
+        default: Qual e o tipo da instancia que sera utilizada?
+      StorageTypePostgreSQL:
+        default: Qual sera o tipo de disco que sera usado?
+      AllocatedStoragePostgreSQL:
+        default: Quanto de disco (Gb) sera provisionado no RDS?
+      MultiAZPostgreSQL:
+        default: O seu SGBD sera provisionado em varias zonas de disponibilidade?
+      BackupPostgreSQL:
+        default: Durante quantos dias voce armazenara o backup do SGBD?
+      CreationSQLServer:
+        default: Voce quer criar o SGBD SQL Server?
+      NameSQLServer: 
+        default: Qual o sera o nome do seu SQL Server?
+      SQLServerEngineVersion:
+        default: Qual sera a versao utilizada?
+      UsernameSQLServer: 
+        default: Crie um nome para o usuario admin do Banco de Dados.
+      PasswordSQLServer: 
+        default: Crie uma senha para o usuario admin do Banco de Dados.
+      InstanceClassSQLServer:
+        default: Qual e o tipo da instancia que sera utilizada?
+      StorageTypeSQLServer:
+        default: Qual sera o tipo de disco que sera usado?
+      AllocatedStorageSQLServer:
+        default: Quanto de disco (Gb) sera provisionado no RDS?
+      MultiAZSQLServer:
+        default: O seu SGBD sera provisionado em varias zonas de disponibilidade?
+      BackupSQLServer:
+        default: Durante quantos dias voce armazenara o backup do SGBD?
+      EngineSQLServer:
+        default: Qual a edicao do SQL Server que voce quer usar?
+
+Parameters: 
+
+# Parametros para conexao de rede
+
+  VPCID:
+    Type: AWS::EC2::VPC::Id
+    Description: Apos a criacao da sua stack, verifique o Security Group criado para adicionar as regras de Inbound Rules do Banco de Dados.
+
+  SubnetIdsRDS:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: 'Escolha pelo menos 3 subnets'
+
+# Parametros para o SGBD RDS Aurora Serverless
+
+  NameAuroraServerless:
+    Type: String
+    AllowedPattern: ^$|[a-z0-9\-]*$
+    ConstraintDescription: "Permitido apenas letras minusculas, numeros e hifen."
+    Description: Permitido apenas letras minusculas, numeros e hifen
+
+  EngineAuroraServerless:
+    Type: String
+    AllowedValues: [aurora, aurora-mysql, aurora-postgresql]
+    Description: aurora = MySQL 5.6, aurora-mysql = MySQL 5.7
+    Default: aurora-mysql
+
+  UsernameAuroraServerless:
+    Type: String
+
+  PasswordAuroraServerless: 
+    Type: String
+
+  MinScaling:
+    Type: String
+    AllowedValues: [1, 2, 4, 8, 16, 32, 64, 128, 256]
+    Description: "Caso queira saber mais sobre o Aurora Serverless, entre neste link: https://docs.aws.amazon.com/pt_br/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.how-it-works.html"
+    Default: 1
+
+  MaxScaling:
+    Type: String
+    AllowedValues: [1, 2, 4, 8, 16, 32, 64, 128, 256]
+    Description: "Caso queira saber mais sobre o Aurora Serverless, entre neste link: https://docs.aws.amazon.com/pt_br/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.how-it-works.html"
+    Default: 2
+
+  BackupAuroraServerless:
+    Type: String
+    AllowedValues: [0, 1, 2 ,3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
+    Default: 30
+
+# Parametros para o SGBG MariaDB
+
+  NameMariaDB:
+    Type: String
+    AllowedPattern: ^$|[a-z0-9\-]*$
+    ConstraintDescription: "Permitido apenas letras minusculas, numeros e hifen."
+    Description: Permitido apenas letras minusculas, numeros e hifen
+
+  MariaDBEngineVersion:
+    Type: String
+    AllowedValues: [10.5, 10.4, 10.3, 10.2]
+    Default: 10.5
+
+  UsernameMariaDB:
+    Type: String
+
+  PasswordMariaDB: 
+    Type: String
+
+  InstanceClassMariaDB:
+    Type: String
+    AllowedValues: [db.m5.large, db.m5.xlarge, db.m5.2xlarge, db.m5.4xlarge, db.m5.8xlarge, db.m5.12xlarge, db.m5.16xlarge, db.m5.24xlarge, db.m6g.large, db.m6g.xlarge, db.m6g.2xlarge, db.m6g.4xlarge, db.m6g.8xlarge, db.m6g.12xlarge, db.m6g.16xlarge, db.r5.large, db.r5.xlarge, db.r5.2xlarge, db.r5.4xlarge, db.r5.8xlarge, db.r5.12xlarge, db.r5.16xlarge, db.r5.24xlarge, db.r6g.large, db.r6g.xlarge, db.r6g.2xlarge, db.r6g.4xlarge, db.r6g.8xlarge, db.r6g.12xlarge, db.r6g.16xlarge, db.x2g.large, db.x2g.xlarge, db.x2g.2xlarge, db.x2g.4xlarge, db.x2g.8xlarge, db.x2g.12xlarge, db.x2g.16xlarge, db.t3.micro, db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge, db.t3.2xlarge, db.t4g.micro, db.t4g.small, db.t4g.medium, db.t4g.large, db.t4g.xlarge, db.t4g.2xlarge]
+    Description: "Caso voce queira saber mais sobre a capacidade da instancias, acesse este link: https://aws.amazon.com/pt/rds/instance-types/"
+    Default: db.m5.large
+
+  StorageTypeMariaDB:
+    Type: String
+    AllowedValues: [standard, gp2, io1]
+    Default: standard
+
+  AllocatedStorageMariaDB:
+    Type: String
+
+  MultiAZMariaDB:
+    Type: String
+    AllowedValues: [true, false]
+    Description: Escolha true para sim e false para nao
+    Default: false
+
+  BackupMariaDB:
+    Type: String
+    AllowedValues: [0, 1, 2 ,3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
+    Default: 30
+
+# Parametros para o SGBG MySQL
+
+  NameMySQL:
+    Type: String
+    AllowedPattern: ^$|[a-z0-9\-]*$
+    ConstraintDescription: "Permitido apenas letras minusculas, numeros e hifen."
+    Description: Permitido apenas letras minusculas, numeros e hifen
+
+  MySQLEngineVersion:
+    Type: String
+    AllowedValues: [8.0, 5.7, 5.6]
+    Default: 8.0
+
+  UsernameMySQL:
+    Type: String
+
+  PasswordMySQL: 
+    Type: String
+
+  InstanceClassMySQL:
+    Type: String
+    AllowedValues: [db.m5.large, db.m5.xlarge, db.m5.2xlarge, db.m5.4xlarge, db.m5.8xlarge, db.m5.12xlarge, db.m5.16xlarge, db.m5.24xlarge, db.m6g.large, db.m6g.xlarge, db.m6g.2xlarge, db.m6g.4xlarge, db.m6g.8xlarge, db.m6g.12xlarge, db.m6g.16xlarge, db.r5.large, db.r5.xlarge, db.r5.2xlarge, db.r5.4xlarge, db.r5.8xlarge, db.r5.12xlarge, db.r5.16xlarge, db.r5.24xlarge, db.r6g.large, db.r6g.xlarge, db.r6g.2xlarge, db.r6g.4xlarge, db.r6g.8xlarge, db.r6g.12xlarge, db.r6g.16xlarge, db.x2g.large, db.x2g.xlarge, db.x2g.2xlarge, db.x2g.4xlarge, db.x2g.8xlarge, db.x2g.12xlarge, db.x2g.16xlarge, db.t3.micro, db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge, db.t3.2xlarge, db.t4g.micro, db.t4g.small, db.t4g.medium, db.t4g.large, db.t4g.xlarge, db.t4g.2xlarge]
+    Description: "Caso voce queira saber mais sobre a capacidade da instancias, acesse este link: https://aws.amazon.com/pt/rds/instance-types/"
+    Default: db.m5.large
+
+  StorageTypeMySQL:
+    Type: String
+    AllowedValues: [standard, gp2, io1]
+    Default: standard
+
+  AllocatedStorageMySQL:
+    Type: String
+
+  MultiAZMySQL:
+    Type: String
+    AllowedValues: [true, false]
+    Description: Escolha true para sim e false para nao
+    Default: false
+
+  BackupMySQL:
+    Type: String
+    AllowedValues: [0, 1, 2 ,3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
+    Default: 30
+
+# Parametros para o SGBG Oracle
+
+  NameOracle:
+    Type: String
+    AllowedPattern: ^$|[a-z0-9\-]*$
+    ConstraintDescription: "Permitido apenas letras minusculas, numeros e hifen."
+    Description: Permitido apenas letras minusculas, numeros e hifen
+
+  OracleEngineVersion:
+    Type: String
+    AllowedValues: [12.1.0.2.v1, 12.1.0.2.v2, 12.1.0.2.v3, 12.1.0.2.v4, 12.1.0.2.v5, 12.1.0.2.v6, 12.1.0.2.v7, 12.1.0.2.v8, 12.1.0.2.v9, 12.1.0.2.v10, 12.1.0.2.v11, 12.1.0.2.v12, 12.1.0.2.v13, 12.1.0.2.v14, 12.1.0.2.v15, 12.1.0.2.v16, 12.1.0.2.v17, 12.1.0.2.v18, 12.1.0.2.v19, 12.1.0.2.v20, 12.1.0.2.v21, 12.1.0.2.v22, 12.1.0.2.v23, 12.1.0.2.v24, 12.1.0.2.v25, 12.2.0.1.ru-2018-10.rur-2018-10.r1, 12.2.0.1.ru-2019-01.rur-2019-01.r1, 12.2.0.1.ru-2019-04.rur-2019-04.r1, 12.2.0.1.ru-2019-07.rur-2019-07.r1, 12.2.0.1.ru-2019-10.rur-2019-10.r1, 12.2.0.1.ru-2020-01.rur-2020-01.r1, 12.2.0.1.ru-2020-04.rur-2020-04.r1, 12.2.0.1.ru-2020-07.rur-2020-07.r1, 12.2.0.1.ru-2020-10.rur-2020-10.r1, 12.2.0.1.ru-2021-01.rur-2021-01.r1, 12.2.0.1.ru-2021-04.rur-2021-04.r1, 12.2.0.1.ru-2021-07.rur-2021-07.r1, 12.2.0.1.ru-2021-10.rur-2021-10.r1, 19.0.0.0.ru-2019-07.rur-2019-07.r1, 19.0.0.0.ru-2019-10.rur-2019-10.r1, 19.0.0.0.ru-2020-01.rur-2020-01.r1, 19.0.0.0.ru-2020-04.rur-2020-04.r1, 19.0.0.0.ru-2020-07.rur-2020-07.r1, 19.0.0.0.ru-2020-10.rur-2020-10.r1, 19.0.0.0.ru-2021-01.rur-2021-01.r1, 19.0.0.0.ru-2021-01.rur-2021-01.r2, 19.0.0.0.ru-2021-04.rur-2021-04.r1, 19.0.0.0.ru-2021-07.rur-2021-07.r1, 19.0.0.0.ru-2021-10.rur-2021-10.r1, 19.0.0.0.ru-2021-10.rur-2021-10.r1]
+    Default: 19.0.0.0.ru-2021-10.rur-2021-10.r1
+
+  UsernameOracle:
+    Type: String
+
+  PasswordOracle: 
+    Type: String
+
+  EngineOracle:
+    Type: String
+    AllowedValues: [oracle-ee, oracle-se2]
+    Default: oracle-ee
+    Description: oracle-ee = Oracle Enterprise Edition, oracle-se2 = Oracle Standard Edition Two
+
+  LicenseModel:
+    Type: String
+    AllowedValues: [license-included, bring-your-own-license]
+    Default: bring-your-own-license
+    Description: A opcao license-included esta disponivel apenas na Engine oracle-se2
+
+  InstanceClassOracle:
+    Type: String
+    AllowedValues: [db.m5.large, db.m5.xlarge, db.m5.2xlarge, db.m5.4xlarge, db.m5.8xlarge, db.m5.12xlarge, db.m5.16xlarge, db.m5.24xlarge, db.m6g.large, db.m6g.xlarge, db.m6g.2xlarge, db.m6g.4xlarge, db.m6g.8xlarge, db.m6g.12xlarge, db.m6g.16xlarge, db.r5.large, db.r5.xlarge, db.r5.2xlarge, db.r5.4xlarge, db.r5.8xlarge, db.r5.12xlarge, db.r5.16xlarge, db.r5.24xlarge, db.r6g.large, db.r6g.xlarge, db.r6g.2xlarge, db.r6g.4xlarge, db.r6g.8xlarge, db.r6g.12xlarge, db.r6g.16xlarge, db.x2g.large, db.x2g.xlarge, db.x2g.2xlarge, db.x2g.4xlarge, db.x2g.8xlarge, db.x2g.12xlarge, db.x2g.16xlarge, db.t3.micro, db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge, db.t3.2xlarge, db.t4g.micro, db.t4g.small, db.t4g.medium, db.t4g.large, db.t4g.xlarge, db.t4g.2xlarge]
+    Description: "Caso voce queira saber mais sobre a capacidade da instancias, acesse este link: https://aws.amazon.com/pt/rds/instance-types/"
+    Default: db.m5.large
+
+  StorageTypeOracle:
+    Type: String
+    AllowedValues: [standard, gp2, io1]
+    Default: standard
+
+  AllocatedStorageOracle:
+    Type: String
+
+  MultiAZOracle:
+    Type: String
+    AllowedValues: [true, false]
+    Description: Escolha true para sim e false para nao
+    Default: false
+
+  BackupOracle:
+    Type: String
+    AllowedValues: [0, 1, 2 ,3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
+    Default: 30
+
+# Parametros para o SGBG PostgreSQL
+
+  NamePostgreSQL:
+    Type: String
+    AllowedPattern: ^$|[a-z0-9\-]*$
+    ConstraintDescription: "Permitido apenas letras minusculas, numeros e hifen."
+    Description: Permitido apenas letras minusculas, numeros e hifen
+
+  PostgreSQLEngineVersion:
+    Type: String
+    AllowedValues: [9.6.1, 9.6.2, 9.6.3, 9.6.5, 9.6.6, 9.6.8, 9.6.9, 9.6.10, 9.6.11, 9.6.12, 9.6.14, 9.6.15, 9.6.16, 9.6.17, 9.6.18, 9.6.19, 9.6.20, 9.6.21, 9.6.22, 9.6.23, 10.4, 10.5, 10.6, 10.7, 10.9, 10.10, 10.11, 10.12, 10.13, 10.14, 10.15, 10.16, 10.17, 10.18]
+    Default: 10.18
+
+  UsernamePostgreSQL:
+    Type: String
+
+  PasswordPostgreSQL: 
+    Type: String
+
+  InstanceClassPostgreSQL:
+    Type: String
+    AllowedValues: [db.m5.large, db.m5.xlarge, db.m5.2xlarge, db.m5.4xlarge, db.m5.8xlarge, db.m5.12xlarge, db.m5.16xlarge, db.m5.24xlarge, db.m6g.large, db.m6g.xlarge, db.m6g.2xlarge, db.m6g.4xlarge, db.m6g.8xlarge, db.m6g.12xlarge, db.m6g.16xlarge, db.r5.large, db.r5.xlarge, db.r5.2xlarge, db.r5.4xlarge, db.r5.8xlarge, db.r5.12xlarge, db.r5.16xlarge, db.r5.24xlarge, db.r6g.large, db.r6g.xlarge, db.r6g.2xlarge, db.r6g.4xlarge, db.r6g.8xlarge, db.r6g.12xlarge, db.r6g.16xlarge, db.x2g.large, db.x2g.xlarge, db.x2g.2xlarge, db.x2g.4xlarge, db.x2g.8xlarge, db.x2g.12xlarge, db.x2g.16xlarge, db.t3.micro, db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge, db.t3.2xlarge, db.t4g.micro, db.t4g.small, db.t4g.medium, db.t4g.large, db.t4g.xlarge, db.t4g.2xlarge]
+    Description: "Caso voce queira saber mais sobre a capacidade da instancias, acesse este link: https://aws.amazon.com/pt/rds/instance-types/"
+    Default: db.m5.large
+
+  StorageTypePostgreSQL:
+    Type: String
+    AllowedValues: [standard, gp2, io1]
+    Default: standard
+
+  AllocatedStoragePostgreSQL:
+    Type: String
+
+  MultiAZPostgreSQL:
+    Type: String
+    AllowedValues: [true, false]
+    Description: Escolha true para sim e false para nao
+    Default: false
+
+  BackupPostgreSQL:
+    Type: String
+    AllowedValues: [0, 1, 2 ,3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
+    Default: 30
+
+# Parametros para o SGBG SQL Server
+
+  NameSQLServer:
+    Type: String
+    AllowedPattern: ^$|[a-z0-9\-]*$
+    ConstraintDescription: "Permitido apenas letras minusculas, numeros e hifen."
+    Description: Permitido apenas letras minusculas, numeros e hifen
+
+  SQLServerEngineVersion:
+    Type: String
+    AllowedValues: [12.00.5571.0.v1, 12.00.6293.0.v1, 12.00.6329.1.v1, 13.00.5820.21.v1, 13.00.5850.14.v1, 13.00.5882.1.v1, 14.00.3294.2.v1, 14.00.3356.20.v1, 14.00.3381.3.v1, 15.00.4043.16.v1, 15.00.4073.23.v1]
+    Default: 15.00.4073.23.v1
+    Description: "Caso queira saber mais sobre as versoes do SQL Server, acesse este link: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.VersionSupport"
+
+  UsernameSQLServer:
+    Type: String
+
+  PasswordSQLServer: 
+    Type: String
+
+  EngineSQLServer:
+    Type: String
+    AllowedValues: [sqlserver-ee, sqlserver-se, sqlserver-ex, sqlserver-web]
+    Default: sqlserver-ee
+    Description: sqlserver-ee = Enterprise Edition, sqlserver-se = Standard Edition, sqlserver-ex = Express Edition, sqlserver-web = Web Edition
+
+  InstanceClassSQLServer: 
+    Type: String
+    AllowedValues: [db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge, db.m5.large, db.m5.xlarge, db.m5.2xlarge, db.m5.4xlarge, db.md5.large, db.md5.xlarge, db.md5.2xlarge, db.md5.4xlarge, db.r5.large, db.r5.xlarge, db.r5.2xlarge, db.r5.4xlarge, db.r5b.large, db.r5b.xlarge, db.r5b.2xlarge, db.r5b.4xlarge, db.r5d.large, db.r5d.xlarge, db.r5d.2xlarge, db.r5d.4xlarge, db.z1d.large, db.z1d.xlarge, db.z1d.2xlarge, db.z1d.3xlarge, db.t3.2xlarge, db.m5.8xlarge, db.m5.12xlarge, db.m5.16xlarge, db.m5.24xlarge, db.md5.8xlarge, db.md5.12xlarge, db.md5.16xlarge, db.md5.24xlarge, db.r5.8xlarge, db.r5.12xlarge, db.r5.16xlarge, db.r5.24xlarge, db.r5b.8xlarge, db.r5b.12xlarge, db.r5b.16xlarge, db.r5b.24xlarge, db.r5d.8xlarge, db.r5d.12xlarge, db.r5d.16xlarge, db.r5d.24xlarge, db.x1e.xlarge, db.x1e.2xlarge, db.x1e.4xlarge, db.x1e.8xlarge, db.x1e.16xlarge, db.x1e.32xlarge, db.x1.16xlarge, db.x1.32xlarge, db.z1d.6xlarge, db.z1d.12xlarge]
+    Description: "Quer saber mais sobre a capacidade da instancias, acesse este link: https://aws.amazon.com/pt/rds/instance-types/"
+    Default: db.t3.xlarge
+
+  StorageTypeSQLServer:
+    Type: String
+    AllowedValues: [standard, gp2, io1]
+    Default: standard
+
+  AllocatedStorageSQLServer:
+    Type: String
+
+  MultiAZSQLServer:
+    Type: String
+    AllowedValues: [true, false]
+    Description: Escolha true para sim e false para nao
+    Default: false
+
+  BackupSQLServer:
+    Type: String
+    AllowedValues: [0, 1, 2 ,3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
+    Default: 30
+
+# Parametros de condicao de criacao dos recursos
+
+  CreationAuroraServerless:
+    Type: String
+    AllowedValues: [true, false]
+    Description: 'Se voce quiser criar o RDS Aurora Serverless escolha true, se nao quiser escolha false, caso escolha false deixe os demais campos desse SGBD em branco. Verifique neste link em quais regioes o Aurora Serverless esta disponivel: https://docs.aws.amazon.com/pt_br/AmazonRDS/latest/AuroraUserGuide/Concepts.AuroraFeaturesRegionsDBEngines.grids.html'
+    Default: false
+
+  CreationMariaDB:
+    Type: String
+    AllowedValues: [true, false]
+    Description: 'Se voce quiser criar o SGBD MariaDB escolha true, se nao quiser escolha false, caso escolha false deixe os demais campos desse SGBD em branco'
+    Default: false
+
+  CreationMySQL:
+    Type: String
+    AllowedValues: [true, false]
+    Description: 'Se voce quiser criar o SGBD MySQL escolha true, se nao quiser escolha false, caso escolha false deixe os demais campos desse SGBD em branco'
+    Default: false
+
+  CreationPostgreSQL:
+    Type: String
+    AllowedValues: [true, false]
+    Description: 'Se voce quiser criar o SGBD PostgreSQL escolha true, se nao quiser escolha false, caso escolha false deixe os demais campos desse SGBD em branco'
+    Default: false
+
+  CreationSQLServer:
+    Type: String
+    AllowedValues: [true, false]
+    Description: 'Se voce quiser criar o SGBD SQLServer escolha true, se nao quiser escolha false, caso escolha false deixe os demais campos desse SGBD em branco'
+    Default: false
+
+  CreationOracle:
+    Type: String
+    AllowedValues: [true, false]
+    Description: 'Se voce quiser criar o SGBD Oracle escolha true, se nao quiser escolha false, caso escolha false deixe os demais campos desse SGBD em branco'
+    Default: false
+
+# Condicoes que indicam qual SGBG de destino sera criado
+
+Conditions:
+
+  CreationAuroraServerless: !Equals [!Ref CreationAuroraServerless, true]
+  CreationMariaDBSelected: !Equals [!Ref CreationMariaDB, true]
+  CreationMySQLSelected: !Equals [!Ref CreationMySQL, true]
+  CreationPostgreSQLSelected: !Equals [!Ref CreationPostgreSQL, true]
+  CreationSQLServerSelected: !Equals [!Ref CreationSQLServer, true]
+  CreationOracleSelected: !Equals [!Ref CreationOracle, true]
+
+# As rules servem para ordenar os tipos de instancias a suas respectivas edicoes do SQL Server
+
+Rules:
+  
+  ExpressEdition:
+    RuleCondition: !Equals 
+      - !Ref EngineSQLServer
+      - sqlserver-ex
+    Assertions:
+      - Assert:
+          'Fn::Contains':
+            - - db.t3.small
+              - db.t3.medium
+              - db.t3.large
+              - db.t3.xlarge
+            - !Ref InstanceClassSQLServer
+        AssertDescription: 'Os tipos de instancia aceitos para a versao Express Edition sao: db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge'
+
+  WebEdition:
+    RuleCondition: !Equals 
+      - !Ref EngineSQLServer
+      - sqlserver-web
+    Assertions:
+      - Assert:
+          'Fn::Contains':
+            - - db.m5.large
+              - db.m5.xlarge
+              - db.m5.2xlarge
+              - db.m5.4xlarge
+              - db.md5.large
+              - db.md5.xlarge
+              - db.md5.2xlarge
+              - db.md5.4xlarge
+              - db.r5.large
+              - db.r5.xlarge
+              - db.r5.2xlarge
+              - db.r5.4xlarge
+              - db.r5b.large
+              - db.r5b.xlarge
+              - db.r5b.2xlarge
+              - db.r5b.4xlarge
+              - db.r5d.large
+              - db.r5d.xlarge
+              - db.r5d.2xlarge
+              - db.r5d.4xlarge
+              - db.z1d.large
+              - db.z1d.xlarge
+              - db.z1d.2xlarge
+              - db.z1d.3xlarge
+              - db.t3.small
+              - db.t3.medium
+              - db.t3.large
+              - db.t3.xlarge
+              - db.t3.2xlarge
+            - !Ref InstanceClassSQLServer
+        AssertDescription: 'Os tipos de instancia aceitos para a versao Web Edition sao: db.m5.large, db.m5.xlarge, db.m5.2xlarge, db.m5.4xlarge, db.md5.large, db.md5.xlarge, db.md5.2xlarge, db.md5.4xlarge, db.r5.large, db.r5.xlarge, db.r5.2xlarge, db.r5.4xlarge, db.r5b.large, db.r5b.xlarge, db.r5b.2xlarge, db.r5b.4xlarge, db.r5d.large, db.r5d.xlarge, db.r5d.2xlarge, db.r5d.4xlarge, db.z1d.large, db.z1d.xlarge, db.z1d.2xlarge, db.z1d.3xlarge, db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge, db.t3.2xlarge' 
+
+  StandardEdition:
+    RuleCondition: !Equals 
+      - !Ref EngineSQLServer
+      - sqlserver-se
+    Assertions:
+      - Assert:
+          'Fn::Contains':
+            - - db.m5.large
+              - db.m5.xlarge
+              - db.m5.2xlarge
+              - db.m5.4xlarge
+              - db.m5.8xlarge
+              - db.m5.12xlarge
+              - db.m5.16xlarge
+              - db.m5.24xlarge
+              - db.md5.large
+              - db.md5.xlarge
+              - db.md5.2xlarge
+              - db.md5.4xlarge
+              - db.md5.8xlarge
+              - db.md5.12xlarge
+              - db.md5.16xlarge
+              - db.md5.24xlarge
+              - db.r5.large
+              - db.r5.xlarge
+              - db.r5.2xlarge
+              - db.r5.4xlarge
+              - db.r5.8xlarge
+              - db.r5.12xlarge
+              - db.r5.16xlarge
+              - db.r5.24xlarge
+              - db.r5b.large
+              - db.r5b.xlarge
+              - db.r5b.2xlarge
+              - db.r5b.4xlarge
+              - db.r5b.8xlarge
+              - db.r5b.12xlarge
+              - db.r5b.16xlarge
+              - db.r5b.24xlarge
+              - db.r5d.large
+              - db.r5d.xlarge
+              - db.r5d.2xlarge
+              - db.r5d.4xlarge
+              - db.r5d.8xlarge
+              - db.r5d.12xlarge
+              - db.r5d.16xlarge
+              - db.r5d.24xlarge
+              - db.x1e.xlarge
+              - db.x1e.2xlarge
+              - db.x1e.4xlarge
+              - db.x1e.8xlarge
+              - db.x1e.16xlarge
+              - db.x1e.32xlarge
+              - db.x1.16xlarge
+              - db.x1.32xlarge
+              - db.z1d.large
+              - db.z1d.xlarge
+              - db.z1d.2xlarge
+              - db.z1d.3xlarge
+              - db.z1d.6xlarge
+              - db.z1d.12xlarge
+              - db.t3.xlarge
+              - db.t3.2xlarge
+            - !Ref InstanceClassSQLServer
+        AssertDescription: 'Os tipos de instancia aceitos para a versao Standard Edition sao: db.m5.large, db.m5.xlarge, db.m5.2xlarge, db.m5.4xlarge, db.m5.8xlarge, db.m5.12xlarge, db.m5.16xlarge, db.m5.24xlarge, db.md5.large, db.md5.xlarge, db.md5.2xlarge, db.md5.4xlarge, db.md5.8xlarge, db.md5.12xlarge, db.md5.16xlarge, db.md5.24xlarge, db.r5.large, db.r5.xlarge, db.r5.2xlarge, db.r5.4xlarge, db.r5.8xlarge, db.r5.12xlarge, db.r5.16xlarge, db.r5.24xlarge, db.r5b.large, db.r5b.xlarge, db.r5b.2xlarge, db.r5b.4xlarge, db.r5b.8xlarge, db.r5b.12xlarge, db.r5b.16xlarge, db.r5b.24xlarge, db.r5d.large, db.r5d.xlarge, db.r5d.2xlarge, db.r5d.4xlarge, db.r5d.8xlarge, db.r5d.12xlarge, db.r5d.16xlarge, db.r5d.24xlarge, db.x1e.xlarge, db.x1e.2xlarge, db.x1e.4xlarge, db.x1e.8xlarge, db.x1e.16xlarge, db.x1e.32xlarge, db.x1.16xlarge, db.x1.32xlarge, db.z1d.large, db.z1d.xlarge, db.z1d.2xlarge, db.z1d.3xlarge, db.z1d.6xlarge, db.z1d.12xlarge, db.t3.xlarge, db.t3.2xlarge'
+
+  EnterpriseEdition:
+    RuleCondition: !Equals 
+      - !Ref EngineSQLServer
+      - sqlserver-ee
+    Assertions:
+      - Assert:
+          'Fn::Contains':
+            - - db.m5.large
+              - db.m5.xlarge
+              - db.m5.2xlarge
+              - db.m5.4xlarge
+              - db.m5.8xlarge
+              - db.m5.12xlarge
+              - db.m5.16xlarge
+              - db.m5.24xlarge
+              - db.md5.large
+              - db.md5.xlarge
+              - db.md5.2xlarge
+              - db.md5.4xlarge
+              - db.md5.8xlarge
+              - db.md5.12xlarge
+              - db.md5.16xlarge
+              - db.md5.24xlarge
+              - db.r5.large
+              - db.r5.xlarge
+              - db.r5.2xlarge
+              - db.r5.4xlarge
+              - db.r5.8xlarge
+              - db.r5.12xlarge
+              - db.r5.16xlarge
+              - db.r5.24xlarge
+              - db.r5b.large
+              - db.r5b.xlarge
+              - db.r5b.2xlarge
+              - db.r5b.4xlarge
+              - db.r5b.8xlarge
+              - db.r5b.12xlarge
+              - db.r5b.16xlarge
+              - db.r5b.24xlarge
+              - db.r5d.large
+              - db.r5d.xlarge
+              - db.r5d.2xlarge
+              - db.r5d.4xlarge
+              - db.r5d.8xlarge
+              - db.r5d.12xlarge
+              - db.r5d.16xlarge
+              - db.r5d.24xlarge
+              - db.x1e.xlarge
+              - db.x1e.2xlarge
+              - db.x1e.4xlarge
+              - db.x1e.8xlarge
+              - db.x1e.16xlarge
+              - db.x1e.32xlarge
+              - db.x1.16xlarge
+              - db.x1.32xlarge
+              - db.z1d.large
+              - db.z1d.xlarge
+              - db.z1d.2xlarge
+              - db.z1d.3xlarge
+              - db.z1d.6xlarge
+              - db.z1d.12xlarge
+              - db.t3.xlarge
+              - db.t3.2xlarge
+            - !Ref InstanceClassSQLServer
+        AssertDescription: 'Os tipos de instancia aceitos para a versao Enterprise Edition sao: db.m5.large, db.m5.xlarge, db.m5.2xlarge, db.m5.4xlarge, db.m5.8xlarge, db.m5.12xlarge, db.m5.16xlarge, db.m5.24xlarge, db.md5.large, db.md5.xlarge, db.md5.2xlarge, db.md5.4xlarge, db.md5.8xlarge, db.md5.12xlarge, db.md5.16xlarge, db.md5.24xlarge, db.r5.large, db.r5.xlarge, db.r5.2xlarge, db.r5.4xlarge, db.r5.8xlarge, db.r5.12xlarge, db.r5.16xlarge, db.r5.24xlarge, db.r5b.large, db.r5b.xlarge, db.r5b.2xlarge, db.r5b.4xlarge, db.r5b.8xlarge, db.r5b.12xlarge, db.r5b.16xlarge, db.r5b.24xlarge, db.r5d.large, db.r5d.xlarge, db.r5d.2xlarge, db.r5d.4xlarge, db.r5d.8xlarge, db.r5d.12xlarge, db.r5d.16xlarge, db.r5d.24xlarge, db.x1e.xlarge, db.x1e.2xlarge, db.x1e.4xlarge, db.x1e.8xlarge, db.x1e.16xlarge, db.x1e.32xlarge, db.x1.16xlarge, db.x1.32xlarge, db.z1d.large, db.z1d.xlarge, db.z1d.2xlarge, db.z1d.3xlarge, db.z1d.6xlarge, db.z1d.12xlarge, db.t3.xlarge, db.t3.2xlarge'
+
+Resources:
+
+# Criacao do permissionamento para o RDS inserir logs no CloudWatch
+
+  RDSRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - monitoring.rds.amazonaws.com
+      Policies:
+        - PolicyName: !Ref AWS::StackName
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:PutRetentionPolicy"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                  - "logs:DescribeLogStreams"
+                  - "logs:GetLogEvents"
+                Resource: "*"
+
+# Criacao do Security Group para o RDS Aurora Serverless
+
+  SecurityGroupRDSAuroraServerless:
+    Type: AWS::EC2::SecurityGroup
+    Condition: CreationAuroraServerless
+    Properties:
+      GroupDescription: Security Group para RDS Aurora Serverless
+      VpcId: !Ref VPCID
+      
+  OutboundRuleRDSAuroraServerless:
+    Type: AWS::EC2::SecurityGroupEgress
+    Condition: CreationAuroraServerless
+    Properties:    
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      CidrIp: 0.0.0.0/0
+      GroupId: !GetAtt SecurityGroupRDSAuroraServerless.GroupId
+
+# Criacao do Subnet Group para o RDS Aurora Serverless
+
+  RDSSubnetGroupAuroraServerless:
+    Type: AWS::RDS::DBSubnetGroup
+    Condition: CreationAuroraServerless
+    Properties:
+       DBSubnetGroupName: !Ref NameAuroraServerless
+       DBSubnetGroupDescription: Grupo de subnet para o RDS Aurora Serverless
+       SubnetIds: !Ref SubnetIdsRDS
+
+# Criacao do SGBD Aurora Serverless
+
+  RDSAuroraServerless:
+    Type: AWS::RDS::DBCluster
+    Condition: CreationAuroraServerless
+    Properties:
+      DBClusterIdentifier: !Ref NameAuroraServerless
+      Engine: !Ref EngineAuroraServerless
+      EngineMode: serverless
+      MasterUsername: !Ref UsernameAuroraServerless
+      MasterUserPassword: !Ref PasswordAuroraServerless
+      ScalingConfiguration:
+        MinCapacity: !Ref MinScaling
+        MaxCapacity: !Ref MaxScaling  
+        AutoPause: false
+      BackupRetentionPeriod: !Ref BackupAuroraServerless
+      VpcSecurityGroupIds:
+        - !GetAtt SecurityGroupRDSAuroraServerless.GroupId
+      DBSubnetGroupName: !Ref RDSSubnetGroupAuroraServerless
+
+# Criacao do Security Group para o RDS MariaDB
+
+  SecurityGroupRDSMariaDB:
+    Type: AWS::EC2::SecurityGroup
+    Condition: CreationMariaDBSelected
+    Properties:
+      GroupDescription: Security Group para RDS MariaDB
+      VpcId: !Ref VPCID
+      
+  OutboundRuleRDSMariaDB:
+    Type: AWS::EC2::SecurityGroupEgress
+    Condition: CreationMariaDBSelected
+    Properties:    
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      CidrIp: 0.0.0.0/0
+      GroupId: !GetAtt SecurityGroupRDSMariaDB.GroupId
+
+# Criacao do Subnet Group para o RDS MariaDB
+
+  RDSSubnetGroupMariaDB:
+    Type: AWS::RDS::DBSubnetGroup
+    Condition: CreationMariaDBSelected
+    Properties:
+       DBSubnetGroupName: !Ref NameMariaDB
+       DBSubnetGroupDescription: Grupo de subnet para o RDS MariaDB
+       SubnetIds: !Ref SubnetIdsRDS
+
+# Criacao do SGBD MariaDB
+
+  RDSMariaDB:
+    Type: AWS::RDS::DBInstance
+    Condition: CreationMariaDBSelected
+    Properties:
+      DBInstanceIdentifier: !Ref NameMariaDB
+      MasterUsername: !Ref UsernameMariaDB
+      MasterUserPassword: !Ref PasswordMariaDB
+      Engine: mariadb
+      EngineVersion: !Ref MariaDBEngineVersion
+      DBInstanceClass: !Ref InstanceClassMariaDB
+      StorageType: !Ref StorageTypeMariaDB
+      AllocatedStorage: !Ref AllocatedStorageMariaDB
+      MultiAZ: !Ref MultiAZMariaDB
+      PubliclyAccessible: false
+      DBSubnetGroupName: !Ref RDSSubnetGroupMariaDB
+      VPCSecurityGroups:
+        - !GetAtt SecurityGroupRDSMariaDB.GroupId
+      BackupRetentionPeriod: !Ref BackupMariaDB
+      MonitoringInterval: '60'
+      MonitoringRoleArn: !GetAtt RDSRole.Arn
+      EnableCloudwatchLogsExports:
+        - audit
+        - error
+        - general
+        - slowquery
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+
+# Criacao do Security Group para o RDS MySQL
+
+  SecurityGroupRDSMySQL:
+    Type: AWS::EC2::SecurityGroup
+    Condition: CreationMySQLSelected
+    Properties:
+      GroupDescription: Security Group para RDS MySQL
+      VpcId: !Ref VPCID
+      
+  OutboundRuleRDSMySQL:
+    Type: AWS::EC2::SecurityGroupEgress
+    Condition: CreationMySQLSelected
+    Properties:    
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      CidrIp: 0.0.0.0/0
+      GroupId: !GetAtt SecurityGroupRDSMySQL.GroupId
+
+# Criacao do Subnet Group para o RDS MySQL
+
+  RDSSubnetGroupMySQL:
+    Type: AWS::RDS::DBSubnetGroup
+    Condition: CreationMySQLSelected
+    Properties:
+       DBSubnetGroupName: !Ref NameMySQL
+       DBSubnetGroupDescription: Grupo de subnet para o RDS MySQL
+       SubnetIds: !Ref SubnetIdsRDS
+
+# Criacao do SGBD MySQL
+
+  RDSMySQL:
+    Type: AWS::RDS::DBInstance
+    Condition: CreationMySQLSelected
+    Properties:
+      DBInstanceIdentifier: !Ref NameMySQL
+      MasterUsername: !Ref UsernameMySQL
+      MasterUserPassword: !Ref PasswordMySQL
+      Engine: mysql
+      EngineVersion: !Ref MySQLEngineVersion
+      DBInstanceClass: !Ref InstanceClassMySQL
+      StorageType: !Ref StorageTypeMySQL
+      AllocatedStorage: !Ref AllocatedStorageMySQL
+      MultiAZ: !Ref MultiAZMySQL
+      PubliclyAccessible: false
+      DBSubnetGroupName: !Ref RDSSubnetGroupMySQL
+      VPCSecurityGroups:
+        - !GetAtt SecurityGroupRDSMySQL.GroupId
+      BackupRetentionPeriod: !Ref BackupMySQL
+      MonitoringInterval: '60'
+      MonitoringRoleArn: !GetAtt RDSRole.Arn
+      EnableCloudwatchLogsExports:
+        - audit
+        - error
+        - general
+        - slowquery
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+
+# Criacao do Security Group para o RDS Oracle
+
+  SecurityGroupRDSOracle:
+    Type: AWS::EC2::SecurityGroup
+    Condition: CreationOracleSelected
+    Properties:
+      GroupDescription: Security Group para RDS Oracle
+      VpcId: !Ref VPCID
+      
+  OutboundRuleRDSOracle:
+    Type: AWS::EC2::SecurityGroupEgress
+    Condition: CreationOracleSelected
+    Properties:    
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      CidrIp: 0.0.0.0/0
+      GroupId: !GetAtt SecurityGroupRDSOracle.GroupId
+
+# Criacao do Subnet Group para o RDS Oracle
+
+  RDSSubnetGroupOracle:
+    Type: AWS::RDS::DBSubnetGroup
+    Condition: CreationOracleSelected
+    Properties:
+       DBSubnetGroupName: !Ref NameOracle
+       DBSubnetGroupDescription: Grupo de subnet para o RDS Oracle
+       SubnetIds: !Ref SubnetIdsRDS
+
+# Criacao do SGBD Oracle
+
+  RDSOracle:
+    Type: AWS::RDS::DBInstance
+    Condition: CreationOracleSelected
+    Properties:
+      DBInstanceIdentifier: !Ref NameOracle
+      MasterUsername: !Ref UsernameOracle
+      MasterUserPassword: !Ref PasswordOracle
+      Engine: !Ref EngineOracle
+      LicenseModel: !Ref LicenseModel
+      EngineVersion: !Ref OracleEngineVersion
+      DBInstanceClass: !Ref InstanceClassOracle
+      StorageType: !Ref StorageTypeOracle
+      AllocatedStorage: !Ref AllocatedStorageOracle
+      MultiAZ: !Ref MultiAZOracle
+      PubliclyAccessible: false
+      DBSubnetGroupName: !Ref RDSSubnetGroupOracle
+      VPCSecurityGroups:
+        - !GetAtt SecurityGroupRDSOracle.GroupId
+      BackupRetentionPeriod: !Ref BackupOracle
+      MonitoringInterval: '60'
+      MonitoringRoleArn: !GetAtt RDSRole.Arn
+      EnableCloudwatchLogsExports:
+        - alert
+        - audit
+        - listener
+        - trace
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+
+# Criacao do Subnet Group para o RDS PostgreSQL
+
+  RDSSubnetGroupPostgreSQL:
+    Type: AWS::RDS::DBSubnetGroup
+    Condition: CreationPostgreSQLSelected
+    Properties:
+       DBSubnetGroupName: !Ref NamePostgreSQL
+       DBSubnetGroupDescription: Grupo de subnet para o RDS PostgreSQL
+       SubnetIds: !Ref SubnetIdsRDS
+
+# Criacao do Security Group para o RDS PostgreSQL
+
+  SecurityGroupPostgreSQL:
+    Type: AWS::EC2::SecurityGroup
+    Condition: CreationPostgreSQLSelected
+    Properties:
+      GroupDescription: Security Group para RDS PostgreSQL
+      VpcId: !Ref VPCID
+      
+  OutboundRulePostgreSQL:
+    Type: AWS::EC2::SecurityGroupEgress
+    Condition: CreationPostgreSQLSelected
+    Properties:    
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      CidrIp: 0.0.0.0/0
+      GroupId: !GetAtt SecurityGroupPostgreSQL.GroupId
+
+# Criacao do SGBD PostgreSQL
+
+  RDSPostgreSQL:
+    Type: AWS::RDS::DBInstance
+    Condition: CreationPostgreSQLSelected
+    Properties:
+      DBInstanceIdentifier: !Ref NamePostgreSQL
+      MasterUsername: !Ref UsernamePostgreSQL
+      MasterUserPassword: !Ref PasswordPostgreSQL
+      Engine: postgres
+      EngineVersion: !Ref PostgreSQLEngineVersion
+      DBInstanceClass: !Ref InstanceClassPostgreSQL
+      StorageType: !Ref StorageTypePostgreSQL
+      AllocatedStorage: !Ref AllocatedStoragePostgreSQL
+      MultiAZ: !Ref MultiAZPostgreSQL
+      PubliclyAccessible: false
+      DBSubnetGroupName: !Ref RDSSubnetGroupPostgreSQL
+      VPCSecurityGroups:
+        - !GetAtt SecurityGroupPostgreSQL.GroupId
+      BackupRetentionPeriod: !Ref BackupPostgreSQL
+      MonitoringInterval: '60'
+      MonitoringRoleArn: !GetAtt RDSRole.Arn
+      EnableCloudwatchLogsExports:
+        - postgresql
+        - upgrade
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+
+# Criacao do Security Group para o RDS SQL Server
+
+  SecurityGroupRDSSQLServer:
+    Type: AWS::EC2::SecurityGroup
+    Condition: CreationSQLServerSelected
+    Properties:
+      GroupDescription: Security Group para RDS SQL Server
+      VpcId: !Ref VPCID
+      
+  OutboundRuleRDSSQLServer:
+    Type: AWS::EC2::SecurityGroupEgress
+    Condition: CreationSQLServerSelected
+    Properties:    
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+      CidrIp: 0.0.0.0/0
+      GroupId: !GetAtt SecurityGroupRDSSQLServer.GroupId
+
+# Criacao do Subnet Group para o RDS SQL Server
+
+  RDSSubnetGroupSQLServer:
+    Type: AWS::RDS::DBSubnetGroup
+    Condition: CreationSQLServerSelected
+    Properties:
+       DBSubnetGroupName: !Ref NameSQLServer
+       DBSubnetGroupDescription: Grupo de subnet para o RDS SQL Server
+       SubnetIds: !Ref SubnetIdsRDS
+
+# Criacao do SGBD SQL Server
+
+  RDSSQLServer:
+    Type: AWS::RDS::DBInstance
+    Condition: CreationSQLServerSelected
+    Properties:
+      DBInstanceIdentifier: !Ref NameSQLServer
+      MasterUsername: !Ref UsernameSQLServer 
+      MasterUserPassword: !Ref PasswordSQLServer
+      Engine: !Ref EngineSQLServer
+      LicenseModel: license-included
+      EngineVersion: !Ref SQLServerEngineVersion
+      DBInstanceClass: !Ref InstanceClassSQLServer
+      StorageType: !Ref StorageTypeSQLServer
+      AllocatedStorage: !Ref AllocatedStorageSQLServer
+      MultiAZ: !Ref MultiAZSQLServer
+      PubliclyAccessible: false
+      DBSubnetGroupName: !Ref RDSSubnetGroupSQLServer
+      VPCSecurityGroups:
+        - !GetAtt SecurityGroupRDSSQLServer.GroupId
+      BackupRetentionPeriod: !Ref BackupSQLServer
+      MonitoringInterval: '60'
+      MonitoringRoleArn: !GetAtt RDSRole.Arn
+      EnableCloudwatchLogsExports:
+        - error
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7

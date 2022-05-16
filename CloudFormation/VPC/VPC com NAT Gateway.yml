@@ -1,0 +1,178 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Este script cria uma VPC, Subnets Privada e Publica, Route Table, Internet Gateway e NAT Gateway.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "VPC"
+        Parameters:
+          - VPCCIDRBlock
+      -
+        Label:
+          default: "Subnets"
+        Parameters:
+          - CIDRBlockSubnet1
+          - AvailabilityZone1
+          - CIDRBlockSubnet2
+          - AvailabilityZone2
+
+    ParameterLabels:
+      VPCCIDRBlock:
+        default: "Insira o Range de IP da sua VPC"
+      CIDRBlockSubnet1:
+        default: "Subnet 1 - Insira o Range de IP desta Subnet"
+      AvailabilityZone1:
+        default: "Subnet 1 - Qual sera a Availability Zone dessa Subnet?"
+      CIDRBlockSubnet2:
+        default: "Subnet 2 - Insira o Range de IP desta Subnet"  
+      AvailabilityZone2:
+        default: "Subnet 2 - Qual sera a Availability Zone dessa Subnet?"  
+
+Parameters: 
+
+# Parametros para VPC
+
+  VPCCIDRBlock:
+    Type: String
+    Description: "Exemplo: 10.128.0.0/22"
+
+# Parametros para Subnets
+
+  AvailabilityZone1:
+    Type: String
+    Description: "Exemplo: us-east-1a"
+
+  AvailabilityZone2:
+    Type: String
+    Description: "Exemplo: us-east-1b"
+
+  CIDRBlockSubnet1:
+    Type: String
+    Description: "Exemplo: 10.128.0.0/24"
+
+  CIDRBlockSubnet2:
+    Type: String
+    Description: "Exemplo: 10.128.1.0/24"
+
+Resources:
+
+# Criacao da VPC
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties: 
+      CidrBlock: !Ref VPCCIDRBlock
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags: 
+        - Key: Name
+          Value: !Sub VPC-${AWS::StackName}
+
+# Criacao das Subnets Publica e Privada
+
+  PrivateSubnet:  
+    Type: AWS::EC2::Subnet
+    Properties: 
+      AvailabilityZone: !Ref AvailabilityZone1
+      CidrBlock: !Ref CIDRBlockSubnet1
+      MapPublicIpOnLaunch: false
+      VpcId: !Ref VPC
+      Tags: 
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-SUBNET-PRIVATE
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      AvailabilityZone: !Ref AvailabilityZone2
+      CidrBlock: !Ref CIDRBlockSubnet2
+      MapPublicIpOnLaunch: false
+      VpcId: !Ref VPC
+      Tags: 
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-SUBNET-PUBLIC
+
+# Criacao do Internet Gateway e Attach em VPC
+  
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Sub IGW-${AWS::StackName}
+  
+  AttachInternetGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+# Criacao do NAT Gateway
+
+  ElasticIP:
+    Type: AWS::EC2::EIP
+    Properties: 
+      Domain: vpc
+      Tags: 
+        - Key: Name
+          Value: !Sub EIP-${AWS::StackName}
+
+  NATGateway:
+    Type: AWS::EC2::NatGateway
+    Properties: 
+      AllocationId: !GetAtt ElasticIP.AllocationId
+      ConnectivityType: public
+      SubnetId: !Ref PublicSubnet
+      Tags: 
+        - Key: Name
+          Value: !Sub NAT-${AWS::StackName}
+
+# Criacao da Route Table Publica
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub PUBLIC-RTB-${AWS::StackName}
+
+  ConfPublicRouteTable:
+    Type: AWS::EC2::Route
+    Properties: 
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  
+  ConfPublicSubnetAssociations:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet
+
+# Criacao da Route Table Privada
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub PRIVATE-RTB-${AWS::StackName}
+
+  ConfPrivateRouteTable:
+    Type: AWS::EC2::Route
+    Properties: 
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGateway
+
+  ConfPrivateSubnetAssociations:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateSubnet

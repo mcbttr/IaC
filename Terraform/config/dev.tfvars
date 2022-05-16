@@ -40,8 +40,8 @@ aks_os_disk_size_gb    = 32
 acr_enabled               = 1
 acr_sku                   = "Premium"
 acr_retention_policy_days = 30
-acr_nw_rule_set_ip_range1 = "189.57.38.146/32"
-acr_nw_rule_set_ip_range2 = "187.32.196.177/32"
+acr_nw_rule_set_ip_range1 = "###.###.###.###/32"
+acr_nw_rule_set_ip_range2 = "###.###.###.###/32"
 
 #STORAGE ACCOUNT
 sa_dl_account_tier             = "Standard"
@@ -51,7 +51,7 @@ sa_dl_account_kind             = "StorageV2"
 #DATA LAKE
 dl_enabled       = 1
 dl_network_rules = "Deny"
-dl_ip_rules      = ["189.57.38.146", "187.32.196.177"]
+dl_ip_rules      = ["###.###.###.###", "###.###.###.###"]
 
 #KEYVAULT
 kv_enabled  = 1
